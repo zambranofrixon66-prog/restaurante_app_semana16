@@ -1,49 +1,127 @@
+import os
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 
 class LoginView(tk.Frame):
-    def __init__(self, parent, controlador, restaurante_servicio):
-        super().__init__(parent, padx=25, pady=25)
+    def __init__(self, master, controlador, servicio):
+        super().__init__(master, bg="#F9F6F7")
         self.controlador = controlador
-        self.servicio = restaurante_servicio
-        self.crear_widgets()
+        self.servicio = servicio
 
-    def crear_widgets(self):
-        titulo = ttk.Label(self, text="Restaurante App", font=("Arial", 16, "bold"))
-        titulo.pack(pady=(0, 10))
+        ventana_raiz = self.winfo_toplevel()
+        ventana_raiz.title("Restaurante - Tkinter")
+        ventana_raiz.geometry("680x520")
+        ventana_raiz.resizable(False, False)
 
-        subtitulo = ttk.Label(self, text="Acceso al Sistema", font=("Arial", 11))
-        subtitulo.pack(pady=(0, 15))
+        self._iniciar_interfaz()
 
-        lbl_usuario = ttk.Label(self, text="Usuario:")
-        lbl_usuario.pack(anchor="w", pady=(5, 0))
-        self.entry_usuario = ttk.Entry(self, width=30)
-        self.entry_usuario.pack(pady=(0, 10))
+    def _iniciar_interfaz(self):
+        self.pack(fill="both", expand=True)
 
-        lbl_pass = ttk.Label(self, text="Contraseña:")
-        lbl_pass.pack(anchor="w", pady=(5, 0))
-        self.entry_pass = ttk.Entry(self, show="*", width=30)
-        self.entry_pass.pack(pady=(0, 15))
+        tarjeta = tk.Frame(self, bg="#FFFFFF", padx=35, pady=30, relief="flat")
+        tarjeta.place(relx=0.5, rely=0.5, anchor="center", width=340, height=460)
 
-        self.lbl_mensaje = ttk.Label(self, text="", foreground="red")
-        self.lbl_mensaje.pack(pady=(0, 10))
+        ruta_logo = os.path.join("assets", "logo.png")
+        if os.path.exists(ruta_logo):
+            try:
+                self.img_logo = tk.PhotoImage(file=ruta_logo)
+                ancho = self.img_logo.width()
+                alto = self.img_logo.height()
+                factor = max(1, ancho // 110, alto // 110)
+                if factor > 1:
+                    self.img_logo = self.img_logo.subsample(factor, factor)
 
-        btn_ingresar = ttk.Button(self, text="Iniciar sesión", command=self.procesar_login)
-        btn_ingresar.pack(fill="x", pady=5)
+                lbl_logo = tk.Label(tarjeta, image=self.img_logo, bg="#FFFFFF")
+                lbl_logo.pack(pady=(0, 10))
+            except Exception:
+                pass
+
+        lbl_titulo = tk.Label(
+            tarjeta,
+            text="Restaurante",
+            font=("Segoe UI", 18, "bold"),
+            bg="#FFFFFF",
+            fg="#111111"
+        )
+        lbl_titulo.pack(pady=(0, 2))
+
+        lbl_subtitulo = tk.Label(
+            tarjeta,
+            text="Inicio de sesión",
+            font=("Segoe UI", 10),
+            bg="#FFFFFF",
+            fg="#777777"
+        )
+        lbl_subtitulo.pack(pady=(0, 20))
+
+        lbl_usuario = tk.Label(
+            tarjeta,
+            text="Usuario",
+            font=("Segoe UI", 9, "bold"),
+            bg="#FFFFFF",
+            fg="#222222",
+            anchor="w"
+        )
+        lbl_usuario.pack(fill="x")
+
+        self.txt_usuario = tk.Entry(
+            tarjeta,
+            font=("Segoe UI", 10),
+            bg="#FFFFFF",
+            relief="solid",
+            bd=1,
+            highlightthickness=0
+        )
+        self.txt_usuario.pack(fill="x", ipady=4, pady=(4, 15))
+        self.txt_usuario.focus_set()
+
+        lbl_clave = tk.Label(
+            tarjeta,
+            text="Contraseña",
+            font=("Segoe UI", 9, "bold"),
+            bg="#FFFFFF",
+            fg="#222222",
+            anchor="w"
+        )
+        lbl_clave.pack(fill="x")
+
+        self.txt_clave = tk.Entry(
+            tarjeta,
+            font=("Segoe UI", 10),
+            show="*",
+            bg="#FFFFFF",
+            relief="solid",
+            bd=1,
+            highlightthickness=0
+        )
+        self.txt_clave.pack(fill="x", ipady=4, pady=(4, 25))
+        self.txt_clave.bind("<Return>", lambda e: self.procesar_login())
+
+        btn_login = tk.Button(
+            tarjeta,
+            text="Iniciar sesión",
+            font=("Segoe UI", 10, "bold"),
+            bg="#DC2626",
+            fg="#FFFFFF",
+            activebackground="#B91C1C",
+            activeforeground="#FFFFFF",
+            relief="flat",
+            cursor="hand2",
+            command=self.procesar_login
+        )
+        btn_login.pack(fill="x", ipady=6)
 
     def procesar_login(self):
-        usuario_txt = self.entry_usuario.get().strip()
-        pass_txt = self.entry_pass.get().strip()
+        usuario = self.txt_usuario.get().strip()
+        clave = self.txt_clave.get().strip()
 
-        if not usuario_txt or not pass_txt:
-            self.lbl_mensaje.config(text="Por favor, complete todos los campos.", foreground="red")
+        if not usuario or not clave:
+            messagebox.showwarning("Atención", "Por favor ingrese usuario y contraseña.")
             return
 
-        usuario_valido = self.servicio.autenticar_usuario(usuario_txt, pass_txt)
+        usuario_valido = self.servicio.autenticar(usuario, clave)
+
         if usuario_valido:
-            self.lbl_mensaje.config(text="")
-            self.entry_usuario.delete(0, tk.END)
-            self.entry_pass.delete(0, tk.END)
             self.controlador.mostrar_main_view(usuario_valido)
         else:
-            self.lbl_mensaje.config(text="Usuario o contraseña incorrectos.", foreground="red")
+            messagebox.showerror("Error", "Credenciales incorrectas.")

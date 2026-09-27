@@ -1,0 +1,11 @@
+[
+    {
+        "id_venta": "V-0001",
+        "id_usuario": "mesero1",
+        "nombre_usuario": "Carlos Mendoza",
+        "id_producto": "P05",
+        "nombre_producto": "Café Americano",
+        "precio": 1.75,
+        "fecha": "2026-09-27 11:22:27"
+    }
+]

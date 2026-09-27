@@ -1,26 +1,37 @@
 [
-  {
-    "id": 1,
-    "nombre": "Hamburguesa Clasica",
-    "precio": 6.50,
-    "categoria": "Platos Fuertes"
-  },
-  {
-    "id": 2,
-    "nombre": "Papas Fritas Medianas",
-    "precio": 2.50,
-    "categoria": "Acompañamientos"
-  },
-  {
-    "id": 3,
-    "nombre": "Gaseosa 500ml",
-    "precio": 1.50,
-    "categoria": "Bebidas"
-  },
-  {
-    "id": 4,
-    "nombre": "Postre Tres Leches",
-    "precio": 3.00,
-    "categoria": "Postres"
-  }
+    {
+        "id_producto": "1",
+        "nombre": "Hamburguesa Clasica",
+        "categoria": "Platos Fuertes",
+        "precio": 6.5,
+        "stock": 0
+    },
+    {
+        "id_producto": "2",
+        "nombre": "Papas Fritas Medianas",
+        "categoria": "Acompañamientos",
+        "precio": 2.5,
+        "stock": 0
+    },
+    {
+        "id_producto": "3",
+        "nombre": "Gaseosa 500ml",
+        "categoria": "Bebidas",
+        "precio": 1.5,
+        "stock": 0
+    },
+    {
+        "id_producto": "4",
+        "nombre": "Postre Tres Leches",
+        "categoria": "Postres",
+        "precio": 3.0,
+        "stock": 0
+    },
+    {
+        "id_producto": "P05",
+        "nombre": "Café Americano",
+        "categoria": "Platos Fuertes",
+        "precio": 1.75,
+        "stock": 29
+    }
 ]
