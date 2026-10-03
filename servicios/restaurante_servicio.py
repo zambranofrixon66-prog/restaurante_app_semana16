@@ -162,3 +162,81 @@ class RestauranteServicio:
         self.guardar_productos()
 
         return True, nueva_venta
+    
+    def guardar_usuarios(self):
+        try:
+            with open(self.archivo_usuarios, "w", encoding="utf-8") as f:
+                json.dump(
+                    [u.to_dict() for u in self.usuarios],
+                    f,
+                    indent=4,
+                    ensure_ascii=False
+                )
+            return True
+        except Exception:
+            return False
+
+    def buscar_usuario_por_username(self, username):
+        username = str(username).strip()
+        for u in self.usuarios:
+            if u.username == username:
+                return u
+        return None
+
+    def crear_usuario(self, username, password, nombre, rol="Cliente"):
+        username = str(username).strip()
+        password = str(password).strip()
+        nombre = str(nombre).strip()
+        rol = str(rol).strip()
+
+        if not username or not password or not nombre or not rol:
+            return False, "Todos los campos son obligatorios."
+
+        roles_validos = ["Administrador", "Empleado", "Cliente"]
+        if rol not in roles_validos:
+            return False, "El rol seleccionado no es válido."
+
+        if self.buscar_usuario_por_username(username):
+            return False, f"El usuario '{username}' ya existe."
+
+        nuevo = Usuario(username=username, password=password, nombre=nombre, rol=rol)
+        self.usuarios.append(nuevo)
+        self.guardar_usuarios()
+        return True, "Usuario registrado exitosamente."
+
+    def actualizar_usuario(self, username, password, nombre, rol):
+        username = str(username).strip()
+        nombre = str(nombre).strip()
+        rol = str(rol).strip()
+
+        if not username or not nombre or not rol:
+            return False, "Complete los campos obligatorios."
+
+        roles_validos = ["Administrador", "Empleado", "Cliente"]
+        if rol not in roles_validos:
+            return False, "El rol seleccionado no es válido."
+
+        user = self.buscar_usuario_por_username(username)
+        if not user:
+            return False, "Usuario no encontrado."
+
+        user.nombre = nombre
+        user.rol = rol
+        if password.strip():
+            user.password = password.strip()
+
+        self.guardar_usuarios()
+        return True, "Usuario actualizado correctamente."
+
+    def eliminar_usuario(self, username, usuario_actual_username=None):
+        username = str(username).strip()
+        if usuario_actual_username and username == str(usuario_actual_username).strip():
+            return False, "No puede eliminar la cuenta que se encuentra en sesión activa."
+
+        user = self.buscar_usuario_por_username(username)
+        if not user:
+            return False, "Usuario no encontrado."
+
+        self.usuarios.remove(user)
+        self.guardar_usuarios()
+        return True, "Usuario eliminado correctamente."

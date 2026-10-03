@@ -21,7 +21,7 @@ class MainView(tk.Frame):
         self.COLOR_CABECERA_VERDE = "#D1FAE5"
         self.COLOR_TEXTO_VERDE = "#064E3B"
         self.COLOR_PIE_ROJO = "#DC2626"
-        
+
         self.AZUL_MARCO = "#DBEAFE"
         self.AZUL_FILA_1 = "#EFF6FF"
         self.AZUL_FILA_2 = "#DBEAFE"
@@ -211,53 +211,225 @@ class MainView(tk.Frame):
         self._limpar_conteudo()
         self._atualizar_dados_rodape()
 
+        es_admin = getattr(self.usuario_actual, "rol", "Cliente") == "Administrador"
+
         tk.Label(
             self.container_conteudo,
-            text="Usuarios registrados",
+            text="Gestión de usuarios" if es_admin else "Consulta de usuarios",
             font=("Segoe UI", 22, "bold"),
             bg=self.FONDO_GENERAL,
             fg="#111827"
         ).pack(anchor="w", pady=(0, 15))
 
-        frame_borde = tk.LabelFrame(
-            self.container_conteudo,
-            text="Consulta de usuarios",
+        contenedor_paneles = tk.Frame(self.container_conteudo, bg=self.FONDO_GENERAL)
+        contenedor_paneles.pack(fill="both", expand=True)
+
+        if es_admin:
+            frame_form = tk.LabelFrame(
+                contenedor_paneles,
+                text="Datos del usuario",
+                font=("Segoe UI", 10, "bold"),
+                bg=self.AZUL_MARCO,
+                fg=self.COLOR_ROJO,
+                padx=15,
+                pady=15,
+                width=320
+            )
+            frame_form.pack(side="left", fill="y", padx=(0, 15))
+            frame_form.pack_propagate(False)
+
+            tk.Label(frame_form, text="Usuario:", bg=self.AZUL_MARCO, fg="#1E3A8A", font=("Segoe UI", 9, "bold")).grid(row=0, column=0, sticky="w", pady=4)
+            self.ent_u_user = tk.Entry(frame_form, font=("Segoe UI", 9), bg=self.GRIS_ENTRY, relief="solid", bd=1)
+            self.ent_u_user.grid(row=0, column=1, sticky="ew", padx=(10, 0), pady=4)
+
+            tk.Label(frame_form, text="Nombre:", bg=self.AZUL_MARCO, fg="#1E3A8A", font=("Segoe UI", 9, "bold")).grid(row=1, column=0, sticky="w", pady=4)
+            self.ent_u_nom = tk.Entry(frame_form, font=("Segoe UI", 9), bg=self.GRIS_ENTRY, relief="solid", bd=1)
+            self.ent_u_nom.grid(row=1, column=1, sticky="ew", padx=(10, 0), pady=4)
+
+            tk.Label(frame_form, text="Contraseña:", bg=self.AZUL_MARCO, fg="#1E3A8A", font=("Segoe UI", 9, "bold")).grid(row=2, column=0, sticky="w", pady=4)
+            self.ent_u_pass = tk.Entry(frame_form, show="*", font=("Segoe UI", 9), bg=self.GRIS_ENTRY, relief="solid", bd=1)
+            self.ent_u_pass.grid(row=2, column=1, sticky="ew", padx=(10, 0), pady=4)
+
+            tk.Label(frame_form, text="Rol:", bg=self.AZUL_MARCO, fg="#1E3A8A", font=("Segoe UI", 9, "bold")).grid(row=3, column=0, sticky="w", pady=4)
+            self.cmb_u_rol = ttk.Combobox(frame_form, values=["Cliente", "Empleado", "Administrador"], state="readonly")
+            self.cmb_u_rol.current(0)
+            self.cmb_u_rol.grid(row=3, column=1, sticky="ew", padx=(10, 0), pady=4)
+
+            self.lbl_info_rol = tk.Label(frame_form, text="Rol: Acceso básico de compras", bg=self.AZUL_MARCO, fg="#4B5563", font=("Segoe UI", 8, "italic"))
+            self.lbl_info_rol.grid(row=4, column=0, columnspan=2, sticky="w", pady=(2, 6))
+
+            frame_form.grid_columnconfigure(1, weight=1)
+
+            btn_reg_u = tk.Button(frame_form, text="➕ Registrar", font=("Segoe UI", 9, "bold"), bg=self.COLOR_ROJO, fg="#FFFFFF", relief="flat", cursor="hand2", command=self._registrar_usuario)
+            btn_reg_u.grid(row=5, column=0, columnspan=2, sticky="ew", pady=(8, 3))
+
+            btn_act_u = tk.Button(frame_form, text="🔄 Actualizar", font=("Segoe UI", 9, "bold"), bg=self.COLOR_ROJO, fg="#FFFFFF", relief="flat", cursor="hand2", command=self._actualizar_usuario)
+            btn_act_u.grid(row=6, column=0, columnspan=2, sticky="ew", pady=3)
+
+            btn_eli_u = tk.Button(frame_form, text="🗑 Eliminar", font=("Segoe UI", 9, "bold"), bg=self.COLOR_ROJO_OSCURO, fg="#FFFFFF", relief="flat", cursor="hand2", command=self._eliminar_usuario)
+            btn_eli_u.grid(row=7, column=0, columnspan=2, sticky="ew", pady=3)
+
+            btn_lim_u = tk.Button(frame_form, text="🧹 Limpiar (Esc)", font=("Segoe UI", 9, "bold"), bg=self.NEGRO_BOTON, fg="#FFFFFF", relief="flat", cursor="hand2", command=self._limpiar_formulario_usuario)
+            btn_lim_u.grid(row=8, column=0, columnspan=2, sticky="ew", pady=3)
+
+            self.cmb_u_rol.bind("<<ComboboxSelected>>", self._on_rol_selected)
+
+            for widget in (self.ent_u_user, self.ent_u_nom, self.ent_u_pass, self.cmb_u_rol):
+                widget.bind("<Return>", lambda e: self._actualizar_usuario() if self.tv_user.selection() else self._registrar_usuario())
+                widget.bind("<Escape>", lambda e: self._limpiar_formulario_usuario())
+
+        frame_tabla = tk.LabelFrame(
+            contenedor_paneles,
+            text="Usuarios registrados",
             font=("Segoe UI", 10, "bold"),
             bg=self.AZUL_MARCO,
             fg=self.COLOR_ROJO,
-            padx=15,
-            pady=15
+            padx=10,
+            pady=10
         )
-        frame_borde.pack(fill="both", expand=True)
+        frame_tabla.pack(side="right", fill="both", expand=True)
 
-        cols = ("id", "nombre", "usuario")
-        tree_frame = tk.Frame(frame_borde, bg=self.AZUL_MARCO)
-        tree_frame.pack(fill="both", expand=True)
+        cols = ("usr", "nom", "rol")
+        self.tv_user = ttk.Treeview(frame_tabla, columns=cols, show="headings", style="Azul.Treeview", selectmode="browse")
+        self.tv_user.heading("usr", text="Usuario")
+        self.tv_user.heading("nom", text="Nombre")
+        self.tv_user.heading("rol", text="Rol")
 
-        t = ttk.Treeview(tree_frame, columns=cols, show="headings", style="Azul.Treeview")
-        t.heading("id", text="Identificación")
-        t.heading("nombre", text="Nombre")
-        t.heading("usuario", text="Usuario")
+        self.tv_user.column("usr", width=140, anchor="w")
+        self.tv_user.column("nom", width=240, anchor="w")
+        self.tv_user.column("rol", width=120, anchor="center")
 
-        t.column("id", width=180, anchor="w")
-        t.column("nombre", width=260, anchor="w")
-        t.column("usuario", width=180, anchor="w")
+        self.tv_user.tag_configure("par", background=self.AZUL_FILA_1)
+        self.tv_user.tag_configure("impar", background=self.AZUL_FILA_2)
 
-        t.tag_configure("par", background=self.AZUL_FILA_1)
-        t.tag_configure("impar", background=self.AZUL_FILA_2)
+        sc_u = ttk.Scrollbar(frame_tabla, orient="vertical", command=self.tv_user.yview)
+        self.tv_user.configure(yscrollcommand=sc_u.set)
 
-        sc = ttk.Scrollbar(tree_frame, orient="vertical", command=t.yview)
-        t.configure(yscrollcommand=sc.set)
+        self.tv_user.pack(side="left", fill="both", expand=True)
+        sc_u.pack(side="right", fill="y")
 
-        t.pack(side="left", fill="both", expand=True)
-        sc.pack(side="right", fill="y")
+        self.tv_user.bind("<<TreeviewSelect>>", self._on_treeview_user_select)
+        self.tv_user.bind("<Escape>", lambda e: self._limpiar_formulario_usuario())
+
+        self._refrescar_tabla_usuarios()
+
+    def _on_rol_selected(self, event):
+        rol = self.cmb_u_rol.get()
+        descripciones = {
+            "Cliente": "Rol: Acceso básico de compras",
+            "Empleado": "Rol: Operación de productos y ventas",
+            "Administrador": "Rol: Control total y gestión de usuarios"
+        }
+        texto = descripciones.get(rol, f"Rol seleccionado: {rol}")
+        if hasattr(self, 'lbl_info_rol'):
+            self.lbl_info_rol.config(text=texto)
+
+    def _refrescar_tabla_usuarios(self):
+        for row in self.tv_user.get_children():
+            self.tv_user.delete(row)
 
         for i, u in enumerate(self.servicio.obtener_usuarios()):
-            uid = getattr(u, 'id_usuario', getattr(u, 'id', getattr(u, 'username', '')))
-            nom = getattr(u, 'nombre', '')
             usr = getattr(u, 'username', '')
+            nom = getattr(u, 'nombre', '')
+            rol = getattr(u, 'rol', 'Cliente')
             tag = "par" if i % 2 == 0 else "impar"
-            t.insert("", tk.END, values=(uid, nom, usr), tags=(tag,))
+            self.tv_user.insert("", tk.END, values=(usr, nom, rol), tags=(tag,))
+
+    def _on_treeview_user_select(self, event):
+        seleccion = self.tv_user.selection()
+        if not seleccion:
+            return
+        item = seleccion[0]
+        if not item:
+            return
+        datos = self.tv_user.item(item, "values")
+        if datos and hasattr(self, 'ent_u_user') and self.ent_u_user.winfo_exists():
+            username = datos[0]
+            user = self.servicio.buscar_usuario_por_username(username)
+            if user:
+                self.ent_u_user.config(state="normal")
+                self.ent_u_user.delete(0, tk.END)
+                self.ent_u_user.insert(0, user.username)
+                self.ent_u_user.config(state="disabled")
+
+                self.ent_u_nom.delete(0, tk.END)
+                self.ent_u_nom.insert(0, user.nombre)
+
+                self.ent_u_pass.delete(0, tk.END)
+                self.cmb_u_rol.set(user.rol)
+                self._on_rol_selected(None)
+
+    def _limpiar_formulario_usuario(self):
+        if hasattr(self, 'ent_u_user') and self.ent_u_user.winfo_exists():
+            self.ent_u_user.config(state="normal")
+            self.ent_u_user.delete(0, tk.END)
+            self.ent_u_nom.delete(0, tk.END)
+            self.ent_u_pass.delete(0, tk.END)
+            self.cmb_u_rol.current(0)
+            self._on_rol_selected(None)
+            if self.tv_user.selection():
+                self.tv_user.selection_remove(self.tv_user.selection())
+
+    def _actualizar_combos_ventas_si_existen(self):
+        if hasattr(self, 'cmb_v_user') and self.cmb_v_user.winfo_exists():
+            usuarios = self.servicio.obtener_usuarios()
+            self.cmb_v_user["values"] = [
+                f"{getattr(u, 'username', '')} - {getattr(u, 'nombre', '')}"
+                for u in usuarios
+            ]
+
+    def _registrar_usuario(self):
+        u = self.ent_u_user.get().strip()
+        n = self.ent_u_nom.get().strip()
+        p = self.ent_u_pass.get().strip()
+        r = self.cmb_u_rol.get().strip()
+
+        exito, msg = self.servicio.crear_usuario(u, p, n, r)
+        if exito:
+            messagebox.showinfo("Éxito", msg)
+            self._refrescar_tabla_usuarios()
+            self._limpiar_formulario_usuario()
+            self._actualizar_combos_ventas_si_existen()
+            self._atualizar_dados_rodape()
+        else:
+            messagebox.showerror("Error", msg)
+
+    def _actualizar_usuario(self):
+        u = self.ent_u_user.get().strip()
+        n = self.ent_u_nom.get().strip()
+        p = self.ent_u_pass.get().strip()
+        r = self.cmb_u_rol.get().strip()
+
+        exito, msg = self.servicio.actualizar_usuario(u, p, n, r)
+        if exito:
+            messagebox.showinfo("Éxito", msg)
+            self._refrescar_tabla_usuarios()
+            self._limpiar_formulario_usuario()
+            self._actualizar_combos_ventas_si_existen()
+            self._atualizar_dados_rodape()
+        else:
+            messagebox.showerror("Error", msg)
+
+    def _eliminar_usuario(self):
+        u = self.ent_u_user.get().strip()
+        if not u:
+            messagebox.showwarning("Atención", "Seleccione un usuario de la lista.")
+            return
+
+        usuario_activo = getattr(self.usuario_actual, "username", "")
+        if u == usuario_activo:
+            messagebox.showwarning("Atención", "No puede eliminar al usuario activo.")
+            return
+        if messagebox.askyesno("Confirmar", f"¿Eliminar al usuario '{u}'?"):
+            exito, msg = self.servicio.eliminar_usuario(u, usuario_activo)
+            if exito:
+                messagebox.showinfo("Éxito", msg)
+                self._refrescar_tabla_usuarios()
+                self._limpiar_formulario_usuario()
+                self._actualizar_combos_ventas_si_existen()
+                self._atualizar_dados_rodape()
+            else:
+                messagebox.showerror("Error", msg)
 
     def _mostrar_painel_productos(self):
         self._destacar_botao(self.btn_nav_produtos)

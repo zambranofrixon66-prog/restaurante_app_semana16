@@ -1,15 +1,15 @@
 ```markdown
-# Restaurante App - Semana 15
+# Restaurante App - Semana 16
 
 **Estudiante:** Frixon Jeancarlos Zambrano Ortiz  
 **Asignatura:** Programación Orientada a Objetos  
-**Semana:** 15  
+**Semana:** 16  
 
 ## Propósito
 
-En esta semana se realizó la evolución de la aplicación `restaurante_app` mediante la implementación del **Módulo de Ventas** y el **Manejo de Eventos** en la interfaz gráfica utilizando `Tkinter` y `ttk`.
+En la Semana 16 se continuó con la evolución de la aplicación `restaurante_app`, manteniendo la arquitectura y las funcionalidades desarrolladas en semanas anteriores e incorporando la gestión completa de usuarios mediante manejo de eventos en `Tkinter`.
 
-El objetivo principal fue incorporar la gestión de transacciones comerciales al sistema, permitiendo registrar ventas vinculando usuarios y productos existentes, con afectación automática del inventario (stock) y persistencia independiente en archivos `JSON`. Se mantuvo de forma estricta la separación de responsabilidades en capas y el enlace desacoplado de eventos visuales.
+El objetivo principal fue permitir al usuario con rol Administrador registrar, consultar, actualizar y eliminar usuarios, utilizando controles como `Treeview`, `Combobox`, botones y eventos de teclado. Además, se mantuvo la persistencia de los datos en archivos `JSON` y la separación de responsabilidades entre modelos, servicios e interfaz gráfica.
 
 ## Estructura del Proyecto
 
@@ -36,55 +36,147 @@ restaurante_app/
 │   └── main_view.py
 ├── main.py
 └── README.md
-
 ```
 
 ## Descripción de la Estructura
 
-* `assets/`: almacena recursos gráficos como logotipos o elementos visuales de la aplicación.
-* `datos/`: almacena los archivos `JSON` (`productos.json`, `usuarios.json` y `ventas.json`) garantizando la persistencia desacoplada de la información.
-* `modelos/`: define las clases entidad del sistema (`Producto`, `Usuario` y la nueva entidad `Venta`), junto con sus métodos de serialización y deserialización de diccionarios.
-* `servicios/`: contiene la lógica del negocio (`RestauranteServicio`) y la gestión de archivos (`ArchivoServicio`), coordinando validaciones, reglas de venta y descuento de inventario.
-* `ui/`: contiene las vistas del sistema (`LoginView` para autenticación y `MainView` para la gestión modular con pestañas).
-* `main.py`: punto de entrada que inicia la aplicación y gestiona el flujo de vistas.
-* `README.md`: documentación completa del proyecto correspondiente a la Semana 15.
+* `assets/`: almacena los recursos gráficos de la aplicación, como el logotipo.
+* `datos/`: contiene los archivos `JSON` utilizados para la persistencia de productos, usuarios y ventas.
+* `modelos/`: contiene las clases `Producto`, `Usuario` y `Venta`.
+* `servicios/`: concentra la lógica del negocio, validaciones y operaciones sobre los datos.
+* `ui/`: contiene las vistas de autenticación y la interfaz principal.
+* `main.py`: funciona como punto de entrada de la aplicación.
+* `README.md`: documenta la evolución del proyecto correspondiente a la Semana 16.
 
-## Mejoras Incorporadas en la Interfaz (Semana 15)
+## Funcionalidades Conservadas de Semanas Anteriores
 
-La interfaz principal (`MainView`) incorporó una nueva pestaña y elementos de control interactivo:
+El sistema mantiene las funciones desarrolladas previamente:
 
-1. **Nueva Pestaña en `ttk.Notebook` (Registro de Ventas):** Área dedicada exclusivamente al proceso de transacciones comerciales y consulta de historial.
-2. **Selectores Dinámicos con `ttk.Combobox`:** Listas desplegables configuradas en modo solo lectura (`readonly`) que muestran los clientes activos y los productos con sus existencias disponibles.
-3. **Manejo de Eventos (`command=` sin invocación inmediata):** Enlace del botón "Registrar Venta" mediante referencia limpia a función (`command=self.callback_registrar_venta`), asegurando que la acción se ejecute únicamente cuando el usuario presiona el control.
-4. **Tabla de Historial con `ttk.Treeview`:** Visualización tabular estructurada en columnas (ID Venta, Cliente, Producto, Precio y Fecha) acompañada de su barra de desplazamiento vertical (`Scrollbar`).
-5. **Actualización Reactiva de Controles:** Al confirmar una transacción exitosa, la interfaz refresca simultáneamente la tabla histórica de ventas, el catálogo de productos y los valores de los selectores desplegables.
+* Autenticación de usuarios.
+* Gestión de productos.
+* Registro de ventas.
+* Descuento automático de stock.
+* Persistencia de productos, usuarios y ventas en archivos `JSON`.
+* Navegación mediante menú lateral.
+* Uso de recursos visuales almacenados en `assets/`.
 
-## Operaciones Implementadas sobre Ventas
+## Gestión de Usuarios - Semana 16
 
-El proceso de venta se ejecuta desde la vista y delega toda la lógica a `RestauranteServicio`:
+En esta semana se incorporó una sección completa para la administración de usuarios.
 
-* **Selección de Participantes:** Captura del identificador del cliente y del producto seleccionado en las listas desplegables.
-* **Validación de Existencia y Stock:** El servicio comprueba que ambos elementos existan y que el producto disponga de al menos una unidad en inventario antes de procesar la orden.
-* **Generación de Registro:** Se crea la instancia de la clase `Venta` asignándole un código identificador único y la marca de fecha/hora del sistema.
-* **Descuento de Stock:** Se disminuye automáticamente en una unidad la cantidad disponible del producto adquirido.
-* **Persistencia Inmediata:** La transacción se guarda en `datos/ventas.json` y los cambios de stock se actualizan en `datos/productos.json`.
+El módulo permite:
 
-## Separación de Responsabilidades y Persistencia
+* Registrar nuevos usuarios.
+* Consultar los usuarios existentes.
+* Actualizar el nombre, contraseña y rol de un usuario.
+* Eliminar usuarios.
+* Evitar que el usuario que tiene una sesión activa elimine su propia cuenta.
+* Mantener los cambios guardados en `datos/usuarios.json`.
 
-Se preservó estrictamente la arquitectura modular del sistema:
+Los roles utilizados en el sistema son:
 
-* La capa **UI** (`MainView`) captura las selecciones, maneja cuadros de diálogo informativos/de error y solicita la actualización de los componentes visuales.
-* La capa de **Servicios** (`RestauranteServicio`) ejecuta las validaciones de negocio, calcula identificadores y coordina la persistencia sin acoplarse a elementos gráficos.
-* La persistencia en `ventas.json` y `productos.json` se realiza de manera independiente mediante `ArchivoServicio`, garantizando la integridad de las transacciones entre sesiones.
+* `Administrador`
+* `Empleado`
+* `Cliente`
+
+El formulario de gestión se muestra al usuario con rol `Administrador`, mientras que los demás perfiles mantienen acceso limitado de acuerdo con la estructura del sistema.
+
+## Manejo de Eventos en Tkinter
+
+La gestión de usuarios incorpora diferentes mecanismos de interacción basados en eventos:
+
+### `<<TreeviewSelect>>`
+
+Al seleccionar un usuario en la tabla, se ejecuta un callback que obtiene el usuario seleccionado y carga automáticamente sus datos en el formulario.
+
+### `<<ComboboxSelected>>`
+
+Permite detectar el cambio de rol realizado mediante el `Combobox` y mostrar información relacionada con el rol seleccionado.
+
+### `<Return>`
+
+La tecla Enter funciona como atajo para ejecutar la acción principal del formulario, permitiendo registrar o confirmar una modificación según el estado actual.
+
+### `<Escape>`
+
+La tecla Escape limpia los campos del formulario y elimina la selección realizada en el `Treeview`.
+
+### `command=`
+
+Los botones Registrar, Actualizar, Eliminar y Limpiar utilizan `command=` para enlazar las acciones de la interfaz con sus callbacks correspondientes.
+
+## Interfaz de Gestión de Usuarios
+
+La sección de usuarios contiene:
+
+* Campo Usuario.
+* Campo Nombre.
+* Campo Contraseña.
+* Selector de Rol mediante `ttk.Combobox`.
+* Botón Registrar.
+* Botón Actualizar.
+* Botón Eliminar.
+* Botón Limpiar.
+* Tabla `ttk.Treeview` para mostrar los usuarios registrados.
+* Barra de desplazamiento vertical.
+
+Por seguridad, la contraseña no se muestra dentro del `Treeview`.
+
+## Separación de Responsabilidades
+
+Se mantiene la arquitectura modular del proyecto:
+
+* La capa de interfaz gráfica captura las acciones del usuario, administra los eventos y actualiza los componentes visuales.
+* `RestauranteServicio` se encarga de las validaciones y operaciones relacionadas con usuarios, productos y ventas.
+* Los modelos representan los datos del sistema.
+* Los archivos `JSON` permiten mantener la información entre diferentes ejecuciones de la aplicación.
+
+De esta manera, la lógica de negocio no se encuentra directamente dentro de los eventos visuales, facilitando el mantenimiento del sistema.
+
+## Persistencia de Usuarios
+
+Los usuarios se almacenan en:
+
+```text
+datos/usuarios.json
+```
+
+Cada usuario contiene la siguiente información:
+
+```json
+{
+    "username": "admin",
+    "password": "123",
+    "nombre": "Administrador General",
+    "rol": "Administrador"
+}
+```
+
+Cuando se registra, actualiza o elimina un usuario, el archivo se actualiza para conservar los cambios.
 
 ## Tecnologías Utilizadas
 
 * `Python`
-* `Tkinter` / `ttk` (`Notebook`, `LabelFrame`, `Treeview`, `Combobox`, `Scrollbar`, `Button`, `Entry`, `Label`)
-* `JSON` (Persistencia de datos)
-* `Programación Orientada a Objetos` (POO)
-* `Git` y `GitHub`
+* `Tkinter`
+* `ttk`
+* `Treeview`
+* `Combobox`
+* `JSON`
+* Programación Orientada a Objetos
+* Git
+* GitHub
+
+## Ejecución
+
+Para ejecutar el sistema desde la carpeta principal del proyecto:
+
+```bash
+python main.py
+```
 
 ## Conclusión
 
-Con las implementaciones de la Semana 15, `restaurante_app` completó el ciclo operativo del negocio integrando el módulo de ventas y el control riguroso de eventos. La conexión fluida entre la captura de acciones del usuario, la validación de inventario y la persistencia de transacciones reafirma una estructura de software mantenible, robusta y alineada a las buenas prácticas de diseño orientado a objetos.
+Durante la Semana 16 se amplió la funcionalidad de `restaurante_app` mediante la implementación de la gestión de usuarios basada en eventos. La incorporación de operaciones de registro, consulta, actualización y eliminación permitió fortalecer el módulo administrativo del sistema.
+
+El uso de eventos como `<<TreeviewSelect>>`, `<<ComboboxSelected>>`, `<Return>` y `<Escape>` mejoró la interacción con la interfaz, mientras que la separación entre la vista y `RestauranteServicio` permitió conservar una arquitectura organizada y reutilizable. Además, la persistencia en `usuarios.json` garantiza que los cambios realizados se mantengan entre sesiones.
+```
